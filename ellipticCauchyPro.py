@@ -1,7 +1,18 @@
 import fenics as fe
 import numpy as np
 import matplotlib.pyplot as plt
-#from multiprocessing.dummy import Pool as ThreadPool
+
+"""
+This script used for evaluating Cauchy-type problem described in 
+B. Jin and J. Zou, Hierarchical Bayesian inference for ill-posed 
+problems via variational method, Journal of Computational Physics, 
+229, 2010, 7317-7343. 
+
+In Subsection 5.1, there are detailed descriptions of the problem.
+The specific settings are following descriptions in Subsection 5.2 (first paragraph): 
+(1) Neumann and Dirichlet boundary conditions, 
+(2) inaccessible and accessible part of the boundary
+"""
 
 # used for generate H
 class GeneH(object):  
@@ -35,18 +46,6 @@ class GeneH(object):
         
         def boundaryD(x, on_boundary):
             return on_boundary and fe.near(x[1], 1.0)
-        
-#        def process(i):
-#            uH = fe.Function(self.Vu)
-#            bcD = fe.DirichletBC(self.Vu, self.theta[i], boundaryD)
-#            left_m, right_m = fe.assemble_system(left, right, bcD)
-#            fe.solve(left_m, uH.vector(), right_m)
-#            return uH
-#        
-#        pool = ThreadPool()
-#        self.sol = pool.map(process, np.arange(num))
-#        pool.close()
-#        pool.join()
                 
         for i in range(num):
             uH = fe.Function(self.Vu)
@@ -146,7 +145,7 @@ def calTrueSol(para):
     Vu = fe.FunctionSpace(mesh, 'P', para['P'])
     Vc = fe.FunctionSpace(mesh, 'P', para['P'])
     al = fe.Constant(para['alpha'])
-    f = fe.Constant(para['f'])
+    f = fe.Expression(para['f'], degree=5)
     q1 = fe.interpolate(fe.Expression(para['q1'], degree=5), Vc)
     q2 = fe.interpolate(fe.Expression(para['q2'], degree=5), Vc)
     q3 = fe.interpolate(fe.Expression(para['q3'], degree=5), Vc)
@@ -192,10 +191,6 @@ def calTrueSol(para):
     fe.solve(left_m, u.vector(), right_m)          
    
     return u
-        
-
-def trueFun(x, y):
-    return np.sin(np.pi*x)*np.exp(np.pi*y) + x + y
 
 
 class MeasurePoints(object):

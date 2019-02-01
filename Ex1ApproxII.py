@@ -1,10 +1,10 @@
 import numpy as np
 import fenics as fe
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 import time as ti
-from generateH import *
-from geneOP import *
+
+from ellipticCauchyPro import *
+from vbiIP import *
 
 # specify the accurate solution 
 expre = "sin(pi*x[0])*exp(pi*x[1]) + x[0] + x[1]"
@@ -23,6 +23,7 @@ para = {'mesh_N': [100, 100], 'q1': q1_expre_n, 'q2': q2_expre_n, \
 mea = MeasurePoints(80)  # point number should be an even number
 
 # generate measurement data by analytic solution
+trueFun = lambda x, y: np.sin(np.pi*x)*np.exp(np.pi*y) + x + y
 u_t = lambda dian: trueFun(dian[0], dian[1])
 u_tm = np.array([u_t(dian) for dian in mea.points_m])
 gH2 = GeneUH(para)
@@ -47,10 +48,10 @@ W = geneL(c)
 # init parameters
 para1 = {'alpha0': 1, 'beta0': 1e-3, 'alpha1': 1, 'beta1': 1e-10}
 t0 = ti.time()
-mE, covE, eta, lan, tau, ite = approxI(H, W, d, para1)
+mE, covE, eta, lan, tau, ite = approxIIGaussian(H, W, d, para1)
 t1 = ti.time()
 print('Inversion consumes ', t1-t0, 's')
-print('approxI iterate ', ite, ' times')
+print('approxII iterate ', ite, ' times')
 print('The regularization parameter is ', eta[-1])
 
 '''
@@ -80,13 +81,6 @@ plt.plot(eta, '-.'), plt.plot(eta, 'o')
 #plt.plot(tau, '--')
 plt.show()
 
-#fig = plt.figure()
-#ax = plt.axes(projection='3d')
-#xplt = np.linspace(0, 1, covE.shape[0])
-#yplt = np.linspace(0, 1, covE.shape[1])
-#Xplt, Yplt = np.meshgrid(xplt, yplt)
-#ax.plot_surface(Xplt, Yplt, np.mat(covE).I, rstride=1, cstride=1, cmap='viridis', edgecolor='none')
-#ax.set_title('Covariance')
-#plt.show()
+
 
 

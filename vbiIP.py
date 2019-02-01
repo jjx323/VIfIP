@@ -1,6 +1,15 @@
 import numpy as np
 from scipy.sparse import spdiags
 
+"""
+[1] This script used for implementing Alg I, Alg II described in 
+B. Jin and J. Zou, Hierarchical Bayesian inference for ill-posed 
+problems via variational method, Journal of Computational Physics, 
+229, 2010, 7317-7343. 
+
+approxIGaussian is the Alg I; approxIIGaussian is the Alg II in [1]
+"""
+
 def geneL(num):
     zhu = np.ones(num)
     ci = -1*zhu
@@ -19,7 +28,7 @@ def findMinL2(H, W, d, eta):
     return x
 
 
-def approxI(H, W, d, para):
+def approxIGaussian(H, W, d, para):
     alpha0, alpha1, beta0, beta1 = para['alpha0'], para['alpha1'], para['beta0'], para['beta1']
     n, m = np.shape(H)
     Ht = np.transpose(H)
@@ -36,15 +45,16 @@ def approxI(H, W, d, para):
     tol = 1e-3
     ite, max_ite = 1, 1000
     eta_full, lan_full, tau_full = [], [], []
-    # ------------------------------------------------------------------------------------------
-    # prapare for the evaluation of the trace to avoid small numbers appeared in the denominator
+    # -------------------------------------------------------------------------
+    # prapare for the evaluation of the trace to avoid small numbers 
+    # appeared in the denominator
     lanHTHT, lanVec = np.linalg.eig(HTH)
     lanWT, WVec = np.linalg.eig(W)
-    eps = 1e-3
+    eps = 1e-5
     xuan = (lanHTHT > eps) & (lanWT > eps)
     lanHTH = np.real(lanHTHT[xuan])
     lanW = np.real(lanWT[xuan])
-    # ------------------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     while np.abs(eta_k - eta_km)/np.abs(eta_k) > tol and ite <= max_ite:
         # update q^{k}(m)
         cov_mk = HTH + eta_k*W
@@ -69,7 +79,7 @@ def approxI(H, W, d, para):
         lan_full.append(lan_k)
         tau_full.append(tau_k)
         # alternating alpha02 since the \tau (\sigma) converges quickly
-        alpha02 = m/2 + alpha0*np.sqrt(tau_k)
+        # alpha02 = m/2 + alpha0*np.sqrt(tau_k)
         
     if ite == max_ite:
         print('Maximum iteration number ', max_ite, ' reached')
@@ -77,7 +87,7 @@ def approxI(H, W, d, para):
     return m_k, cov_mk, eta_full, lan_full, tau_full, ite
 
 
-def approxII(H, W, d, para):
+def approxIIGaussian(H, W, d, para):
     alpha0, alpha1, beta0, beta1 = para['alpha0'], para['alpha1'], para['beta0'], para['beta1']
     n, m = np.shape(H)
     Ht = np.transpose(H)
@@ -116,7 +126,7 @@ def approxII(H, W, d, para):
         lan_full.append(lan_k)
         tau_full.append(tau_k)
         # alternating alpha02, since the \tau (\sigma) converges quickly
-        alpha02 = m/2 + alpha0*np.sqrt(tau_k)
+        # alpha02 = m/2 + alpha0*np.sqrt(tau_k)
         
     if ite == max_ite:
         print('Maximum iteration number ', max_ite, ' reached')

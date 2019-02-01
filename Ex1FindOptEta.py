@@ -2,8 +2,9 @@ import numpy as np
 import fenics as fe
 import matplotlib.pyplot as plt
 import time as ti
-from generateH import *
-from geneOP import *
+
+from ellipticCauchyPro import *
+from vbiIP import *
 
 
 # specify the accurate solution 
@@ -23,6 +24,7 @@ para = {'mesh_N': [100, 100], 'q1': q1_expre_n, 'q2': q2_expre_n, \
 mea = MeasurePoints(80)  # point number should be an even number
 
 # generate measurement data by analytic solution
+trueFun = lambda x, y: np.sin(np.pi*x)*np.exp(np.pi*y) + x + y
 u_t = lambda dian: trueFun(dian[0], dian[1])
 u_tm = np.array([u_t(dian) for dian in mea.points_m])
 gH2 = GeneUH(para)
