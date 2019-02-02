@@ -7,7 +7,8 @@ B. Jin and J. Zou, Hierarchical Bayesian inference for ill-posed
 problems via variational method, Journal of Computational Physics, 
 229, 2010, 7317-7343. 
 
-approxIGaussian is the Alg I; approxIIGaussian is the Alg II in [1]
+approxIGaussian is the Alg I in [1]; 
+approxIIGaussian is the Alg II in [1]; 
 """
 
 def geneL(num):
@@ -26,6 +27,28 @@ def findMinL2(H, W, d, eta):
     r = Ht@d
     x = np.linalg.solve(temp, r)
     return x
+
+
+def eignCompu(listM):
+    # This function select eigenvalues larger than eps for 
+    # all matrixes appeared in listM
+    eps = 1e-5
+    i = 0
+    lenM = len(listM)
+    lanMt = []
+    lanMtt, lanVecM = np.linalg.eig(listM[0])
+    xuan_t = (lanMtt > eps)
+    lanMt.append(lanMtt)
+    if lenM >= 2:
+        for M in listM[1:]:
+            lanMtt, lanVecM = np.linalg.eig(M)
+            xuan = (lanMtt > eps) & xuan_t
+            xuan_t = xuan
+            lanMt.append(lanMtt)
+    for i in range(lenM):
+        lanMt[i] = np.real(lanMt[i][xuan])
+
+    return lanMt
 
 
 def approxIGaussian(H, W, d, para):
@@ -48,12 +71,8 @@ def approxIGaussian(H, W, d, para):
     # -------------------------------------------------------------------------
     # prapare for the evaluation of the trace to avoid small numbers 
     # appeared in the denominator
-    lanHTHT, lanVec = np.linalg.eig(HTH)
-    lanWT, WVec = np.linalg.eig(W)
-    eps = 1e-5
-    xuan = (lanHTHT > eps) & (lanWT > eps)
-    lanHTH = np.real(lanHTHT[xuan])
-    lanW = np.real(lanWT[xuan])
+    lanList = eignCompu([HTH, W])
+    lanHTH, lanW = lanList[0], lanList[1]
     # -------------------------------------------------------------------------
     while np.abs(eta_k - eta_km)/np.abs(eta_k) > tol and ite <= max_ite:
         # update q^{k}(m)
@@ -134,4 +153,61 @@ def approxIIGaussian(H, W, d, para):
     return m_k, cov_mk, eta_full, lan_full, tau_full, ite
     
 
+#def approxICenteredT(H, LTL, d, para):
+#    alpha0, alpha1 = para['alpha0'], para['alpha1']
+#    beta0, beta1 = para['beta0'], para['beta1']
+#    n, m = np.shape(H)
+#    Ht = np.transpose(H)
+#    s = np.linalg.matrix_rank(LTL)
+#    alpha0k = alpha0 + s/2.0
+#    alpha1k = alpha1 + 1/2.0
+#    beta0k, beta1k = beta0, beta1
+#    lambda_k = alpha0k/beta0k
+#    len_d = len(d)
+#    Wk = np.diag(np.repeat(beta0k, len_d))
+#    
+#    tol = 1e-5
+#    ite, max_ite = 1, 1000
+#    lan_full, e_full = [], []
+#    m_k, m_k1 = [1, 1], [0, 0] 
+#    HTH = Ht@H
+#    while np.linalg.norm((m_k-m_k1)/m_k, 2) > tol and ite <= max_ite:
+#        # update q^{k}(m)
+#        HTWH = Ht@Wk@H
+#        cov_mk = HTWH + lambda_k*LTL
+#        m_k = np.linalg.solve(cov_mk, Ht.dot(Wk.dot(d)))
+#        # update q^{k}(w)
+#        # prapare for the evaluation of the trace to avoid small numbers 
+#        # appeared in the denominator
+#        lanList = eignCompu([HTWH, HTH, LTL])
+#        lanHTWH, lanHTH, lanLTL = lanList[0], lanList[1], lanList[2]
+#        
+#        # update q^{k}(\lambda)
+#    
+#    
+#    if ite == max_ite:
+#        print('Maximum iteration number ', max_ite, ' reached')
+#        
+#    return m_k, cov_mk, lan_full, e_full, ite
+#    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
