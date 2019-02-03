@@ -18,6 +18,8 @@ def geneL(num):
     ci = -1*zhu
     L1 = spdiags([zhu, ci], [0, 1], num-1, num).toarray()
     W = num*(L1.T)@L1 #+ np.eye(num)
+    W[0, 0] = 2*W[1, 1]   # force the left boundary equal to zero
+    W[-1, -1] = 2*W[1, 1] # force the right boundary equal to zero
     #W = (L1.T)@L1
     return np.array(W)
 

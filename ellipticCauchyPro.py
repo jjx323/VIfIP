@@ -199,6 +199,7 @@ class MeasurePoints(object):
         yy = np.linspace(0, 1, np.floor(num/2))
         xxl, xxr = yy*0.0, yy*0.0+1
         self.points_m = np.vstack((np.transpose([xxl, yy]), np.transpose([xxr, yy])))
+        #self.points_m = np.vstack((np.transpose([xxr, yy]), np.flip(np.transpose([xxl, yy]), -1)))
         self.num = len(self.points_m)
         
         

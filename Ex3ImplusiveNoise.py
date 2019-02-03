@@ -23,8 +23,9 @@ q2_expre_n = "pi*cos(pi*x[0])*exp(pi*x[1]) + 1"
 q3_expre_n = "-(pi*sin(pi*x[0])*exp(pi*x[1]) + 1)"
 # specify the true values of the Dirichelet boundary 
 # q4 = [0,1] \times {1}
-q4_expre_d = "sin(pi*x[0])*exp(pi) + x[0] + 1"
+#q4_expre_d = "sin(pi*x[0])*exp(pi) + x[0] + 1"
 #q4_expre_d = "0.3<=x[0] && x[0]<=0.7 ? 0.5 : 0"
+q4_expre_d = "0.0<=x[0] && x[0]<=0.5 ? 2*x[0] : (0.5<=x[0] && x[0]<=1.0 ? 2-2*x[0] : 0)"
 # solving the forward problem
 para = {'mesh_N': [100, 100], 'q1': q1_expre_n, 'q2': q2_expre_n, \
         'q3': q3_expre_n, 'q4': q4_expre_d, 'alpha': '1.0', \
@@ -40,7 +41,7 @@ u_tm = np.array([u_t(dian) for dian in mea.points_m])
 gH2 = GeneUH(para)
 gH2.eva()
 Uh = gH2.gene(mea.points_m)
-paraNoise = {'rate': 0.5, 'noise_level': 3}
+paraNoise = {'rate': 0.5, 'noise_level': 2}
 u_tm_n, sig = addGaussianNoise(u_tm, paraNoise, 'y')
 d = u_tm_n - Uh
 
@@ -68,7 +69,7 @@ t12 = ti.time()
 # Alg I with centered t-distribution noise assumption
 para3 = {'alpha0': 1, 'beta0': 1e-3, 'alpha1': 1, 'beta1': 1e-7}
 t03 = ti.time()
-mE3, precisionMatrix3, lan3, error, W, ite3 = approxICenteredT(H, W, d, para2)
+mE3, precisionMatrix3, lan3, error, wS, ite3 = approxICenteredT(H, W, d, para2)
 t13 = ti.time()
 
 '''
@@ -117,11 +118,18 @@ plt.plot(xx, fm, color='blue', label='True')
 plt.xlabel('x coordiante')
 plt.ylabel('function values')
 plt.title('True and estimated functions')
+plt.legend()
 plt.show()
 
 plt.figure()
-plt.plot(W/np.max(W))
+plt.plot(wS/np.max(wS), 'o-')
+plt.plot(d/np.max(d), '*-')
+plt.show()
+
+plt.figure()
 plt.plot(d/np.max(d))
+dture = u_tm - Uh
+plt.plot(dture/np.max(dture))
 plt.show()
 
 #fig = plt.figure()
