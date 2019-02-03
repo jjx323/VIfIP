@@ -45,9 +45,15 @@ u_tm_n, sig = addGaussianNoise(u_tm, paraNoise, 'y')
 d = u_tm_n - Uh
 
 # generate the forward operator H
+<<<<<<< HEAD
 para['mesh_N'] = [50, 50]
 gH = GeneH(para)
 gH.eva(101)  # set 101 basis functions 
+=======
+#para['mesh_N'] = [50, 50]
+#gH = GeneH(para)
+#gH.eva(101)  # set 101 basis functions 
+>>>>>>> 3f7b1538c1ba236bec5ddb978c1ab020c06f3524
 #H = gH.gene(mea.points_m)
 #np.save('Hsave.npy', H)
 H = np.load('Hsave.npy')
