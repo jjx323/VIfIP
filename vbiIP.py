@@ -2,13 +2,15 @@ import numpy as np
 from scipy.sparse import spdiags
 
 """
-[1] This script used for implementing Alg I, Alg II described in 
-B. Jin and J. Zou, Hierarchical Bayesian inference for ill-posed 
+[1] B. Jin and J. Zou, Hierarchical Bayesian inference for ill-posed 
 problems via variational method, Journal of Computational Physics, 
 229, 2010, 7317-7343. 
+[2] B. Jin, A variational Bayesian method to inverse problems with 
+implusive noise, Journal of Computational Physics, 231. 2012, 423-435.
 
 approxIGaussian is the Alg I in [1]; 
 approxIIGaussian is the Alg II in [1]; 
+approxICenteredT is the Alg I in [2];
 """
 
 def geneL(num):
@@ -60,18 +62,20 @@ def approxIGaussian(H, W, d, para):
     while np.abs(eta_k - eta_km)/np.abs(eta_k) > tol and ite <= max_ite:
         # update q^{k}(m)
         precision_mk = HTH + eta_k*W
-        cov_mk = myInv(precision_mk)
-        #m_k = np.linalg.solve(precision_mk, Ht.dot(d))  
-        m_k = cov_mk@(Ht.dot(d))
+        #cov_mk = myInv(precision_mk)
+        m_k = np.linalg.solve(precision_mk, Ht.dot(d))  
+        #m_k = cov_mk@(Ht.dot(d))
         # update q^{k}(\lambda)
         temp1 = m_k@W@m_k
-        temp2 = (np.sum(np.diag(cov_mk@W)))/tau_k 
+        temp2 = np.trace(np.linalg.solve(precision_mk, W))/tau_k
+        #temp2 = np.trace(cov_mk@W)/tau_k
         beta0k = 0.5*(temp1 + temp2) + beta0
         lan_k = alpha02/beta0k
         # update q^{k}(\tau)
         temp0 = H@m_k - d
         temp1 = np.transpose(temp0)@temp0
-        temp2 = (np.sum(np.diag(cov_mk@HTH)))/tau_k
+        temp2 = np.trace(np.linalg.solve(precision_mk, HTH))/tau_k
+        #temp2 = np.trace(cov_mk@HTH)/tau_k
         beta1k = 0.5*(temp1 + temp2) + beta1
         tau_k = alpha12/beta1k
         # update \eta_{k}
@@ -111,9 +115,9 @@ def approxIIGaussian(H, W, d, para):
     while np.abs(eta_k - eta_km)/np.abs(eta_k) > tol and ite <= max_ite:
         # update q^{k}(m)
         precision_mk = HTH + eta_k*W
-        #m_k = np.linalg.solve(precision_mk, Ht.dot(d))
-        cov_mk = myInv(precision_mk)
-        m_k = cov_mk@(Ht.dot(d))
+        m_k = np.linalg.solve(precision_mk, Ht.dot(d))
+        #cov_mk = myInv(precision_mk)
+        #m_k = cov_mk@(Ht.dot(d))
         # update q^{k}(\lambda)
         temp1 = m_k@W@m_k
         beta0k = 0.5*temp1+ beta0
@@ -154,7 +158,7 @@ def approxICenteredT(H, LTL, d, para):
     lambda_k = alpha0k/beta0k
     Wk = np.diag(alpha1k/beta1k)
     
-    tol = 1e-3
+    tol = 1e-5
     ite, max_ite = 1, 1000
     lan_full, e_full = [], []
     m_k, m_k1 = np.ones(m), np.zeros(m)
@@ -162,24 +166,26 @@ def approxICenteredT(H, LTL, d, para):
     while err > tol and ite <= max_ite:
         m_k1 = m_k.copy()
         # update q^{k}(m)
-        HTWH = Ht@Wk@H
-        precision_mk = HTWH + lambda_k*LTL       
-        #m_k = np.linalg.solve(precision_mk+minv, Ht.dot(Wk.dot(d)))
-        cov_mk = myInv(precision_mk, 1e-2)  
-        m_k = cov_mk@Ht@Wk@d
+        precision_mk = Ht@Wk@H + lambda_k*LTL       
+        m_k = np.linalg.solve(precision_mk, Ht.dot(Wk.dot(d)))
+        #cov_mk = myInv(precision_mk)  
+        #m_k = cov_mk@Ht@Wk@d
         # update q^{k}(w)
         temp0 = H@m_k - d
         temp1 = temp0*temp0
-        #temp2 = np.diag(H@np.linalg.solve(precision_mk+minv, Ht))
-        temp2 = np.diag(H@cov_mk@Ht)
+        temp2 = np.diag(H@np.linalg.solve(precision_mk, Ht))
+        #temp2 = np.diag(H@cov_mk@Ht)
         beta1k = beta1 + 0.5*(temp1 + temp2)
+        #beta1k = beta1 + 0.5*(temp1)
         Wk = alpha1k/beta1k
-        Wk = np.diag(Wk)        
+        Wk = np.diag(Wk)   
         # update q^{k}(\lambda)
+        precision_mk = Ht@Wk@H + lambda_k*LTL
         temp1 = m_k@LTL@m_k
-        #temp2 = np.sum(np.diag(np.linalg.solve(precision_mk+minv, LTL)))
-        temp2 = np.sum(np.diag(cov_mk@LTL))
+        temp2 = np.trace(np.linalg.solve(precision_mk, LTL))
+        #temp2 = np.trace(cov_mk@LTL)
         beta0k = beta0 + 0.5*(temp1 + temp2)
+        #beta0k = beta0 + 0.5*(temp1)
         lambda_k = alpha0k/beta0k
         #update
         err = np.linalg.norm((m_k-m_k1)/m_k, 2)

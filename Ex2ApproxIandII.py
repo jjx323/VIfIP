@@ -23,6 +23,7 @@ q1_expre_n, q2_expre_n, q3_expre_n = "1.0", "1.0", "1.0"
 # q4 = [0,1] \times {1}
 #q4_expre_d = "0.0<=x[0] && x[0]<=0.5 ? 2*x[0] : (0.5<=x[0] && x[0]<=1.0 ? 2-2*x[0] : 0)"
 q4_expre_d = "0.3<=x[0] && x[0]<=0.7 ? 0.5 : 0"
+#q4_expre_d = "sin(pi*x[0])*exp(pi) + x[0] + 1"
 # solving the forward problem
 para = {'mesh_N': [100, 100], 'q1': q1_expre_n, 'q2': q2_expre_n, \
         'q3': q3_expre_n, 'q4': q4_expre_d, 'alpha': '1.0', \
@@ -38,9 +39,9 @@ u_tm = np.array([u_t(dian) for dian in mea.points_m])
 gH2 = GeneUH(para)
 gH2.eva()
 Uh = gH2.gene(mea.points_m)
-d = u_tm - Uh
-paraNoise = {'rate': 1, 'noise_level': 0.03}
-d, sig = addGaussianNoise(d, paraNoise)
+paraNoise = {'rate': 1, 'noise_level': 0.003}
+u_tm_n, sig = addGaussianNoise(u_tm, paraNoise, 'y')
+d = u_tm_n - Uh
 
 # generate the forward operator H
 para['mesh_N'] = [50, 50]
@@ -52,7 +53,7 @@ H = gH.gene(mea.points_m)
 r, c = np.shape(H)
 W = geneL(c)
 # init parameters
-para1 = {'alpha0': 1, 'beta0': 1e-3, 'alpha1': 1, 'beta1': 1e-10}
+para1 = {'alpha0': 1, 'beta0': 1e-3, 'alpha1': 1, 'beta1': 1e-7}
 # Alg I
 t01 = ti.time()
 mE1, covE1, eta1, lan1, tau1, ite1 = approxIGaussian(H, W, d, para1)
