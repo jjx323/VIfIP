@@ -5,6 +5,7 @@ import time as ti
 
 from ellipticCauchyPro import *
 from vbiIP import *
+from addNoise import *
 
 # specify the accurate solution 
 expre = "sin(pi*x[0])*exp(pi*x[1]) + x[0] + x[1]"
@@ -30,11 +31,8 @@ gH2 = GeneUH(para)
 gH2.eva()
 Uh = gH2.gene(mea.points_m)
 d = u_tm - Uh
-noise_level = 0.03   # set noise level to be 3%
-np.random.seed(0)
-noise = np.random.normal(0, 1, len(d))
-d = d + noise_level*np.max(np.abs(d))*noise
-sig = noise_level*np.max(np.abs(d))
+paraNoise = {'rate': 1, 'noise_level': 0.03}
+d, sig = addGaussianNoise(d, paraNoise)
 
 # generate the forward operator H
 para['mesh_N'] = [50, 50]
