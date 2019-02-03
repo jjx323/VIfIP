@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def addGaussianNoise(d, para):
+def addGaussianNoise(d, para, testMode='n'):
 #    This function add noises as follows:
 #    d_i = d_i with probability 1-para['rate']
 #    d_i = d_i + \epsilon \xi_i with probability para['rate']
@@ -15,7 +15,8 @@ def addGaussianNoise(d, para):
 #    
 #    Ref: B. Jin, A variational Bayesian method to inverse problems with implusive noise,
 #    Journal of Computational Physics, 231, 2012, 423-435 (Page 428, Section 4). 
-
+    if testMode == 'y':
+        np.random.seed(1)
     noise_level = para['noise_level']
     len_d = len(d)
     r = para['rate']
