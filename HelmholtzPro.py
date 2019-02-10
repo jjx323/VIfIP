@@ -20,6 +20,10 @@ class Domain(object):
         self.mesh = fe.RectangleMesh(fe.Point(-dPML, -dPML), fe.Point(xx+dPML, yy+dPML), Nx, Ny)
         self.haveMesh = True
         
+    def modifyNxNy(self, nx, ny):
+        self.nx, self.ny = nx, ny
+        self.haveMesh = False
+        
     def numberOfMesh(self):
         if self.haveMesh == False:
             print('Mesh has not been generated!')
@@ -40,6 +44,10 @@ class Helmholtz(object):
     def __init__(self, domain, para={'kappa': 5.0}):
         self.domain = domain
         self.kappa = para['kappa']
+        self.haveFunctionSpace = False
+        
+    def modifyDomain(self, domain):
+        self.domain = domain
         self.haveFunctionSpace = False
         
     def geneFunctionSpace(self):
@@ -118,7 +126,7 @@ class Helmholtz(object):
     
     def solve(self):
         self.u = fe.Function(self.V)
-        fe.solve(self.A, self.u.vector(), self.b1)
+        fe.solve(self.A, self.u.vector(), self.b1, 'mumps')
         self.uReal, self.uImag = self.u.split()
 
     def drawSolution(self):
