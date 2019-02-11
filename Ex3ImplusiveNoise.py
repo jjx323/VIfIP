@@ -41,8 +41,9 @@ u_tm = np.array([u_t(dian) for dian in mea.points_m])
 gH2 = GeneUH(para)
 gH2.eva()
 Uh = gH2.gene(mea.points_m)
-paraNoise = {'rate': 0.5, 'noise_level': 2}
-u_tm_n, sig = addGaussianNoise(u_tm, paraNoise, 'y')
+paraNoise = {'rate': 0.5, 'noise_level': 5}
+#u_tm_n, sig = addGaussianNoise(u_tm, paraNoise, 'y')
+u_tm_n = addImplusiveNoise(u_tm, paraNoise, 'y')
 d = u_tm_n - Uh
 
 # generate the forward operator H
